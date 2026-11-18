@@ -7,8 +7,8 @@ A full-stack inventory management system with a React (Vite) web frontend and a 
 - `frontend/` — React web app (Vite, React Router, Tailwind utilities/components)
 - `server/` — Express API server, Mongoose models, auth, inventory/business routes
 - `server/scripts/` — standalone Node scripts for API/debug/maintenance tasks
-- `CONSTRAINTS_DOCUMENTATION.md` — inventory domain constraints and relationship rules
-- `supplier-portal.html` — standalone supplier portal page (served by backend route when available)
+- `server/public/` — standalone server-served static pages (e.g. supplier portal)
+- `docs/` — project documentation (constraints, etc.)
 
 ## Prerequisites
 
@@ -107,5 +107,10 @@ Optional environment variables:
 
 ## Additional docs
 
-- `CONSTRAINTS_DOCUMENTATION.md` — product/category/supplier/PO/stock-adjustment relationships and validation constraints.
+- `docs/CONSTRAINTS.md` — product/category/supplier/PO/stock-adjustment relationships and validation constraints.
 - `frontend/README.md` — frontend-specific development notes.
+
+## Supplier portal
+
+- A standalone supplier portal page is available at `server/public/supplier-portal.html`.
+- When the backend server is running, it is served at `GET /supplier-portal` (e.g. `http://localhost:3000/supplier-portal`).

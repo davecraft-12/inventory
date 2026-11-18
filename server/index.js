@@ -10,6 +10,7 @@ import connectDB from "./db/connection.js";
 import bcrypt from "bcryptjs";
 import User from "./models/User.js";
 import path from "path";
+import { fileURLToPath } from "url";
 
 import authRoutes from "./routes/auth.js";
 import productRoutes from "./routes/products.js";
@@ -29,6 +30,9 @@ import salesOrderRoutes from "./routes/salesOrders.js";
 // Load .env file
 // -------------------------
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // -------------------------
 // Create Express app
@@ -70,9 +74,9 @@ app.get("/", (req, res) => {
   res.send("Welcome to the API!");
 });
 
-// Serve supplier portal
+// Serve supplier portal (standalone page in server/public)
 app.get("/supplier-portal", (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'supplier-portal.html'));
+  res.sendFile(path.join(__dirname, "public", "supplier-portal.html"));
 });
 
 // Debug route to check auth
