@@ -1,6 +1,13 @@
-import connectDB from './db/connection.js';
-import Product from './models/Product.js';
-import StockAdjustment from './models/StockAdjustment.js';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+import connectDB from '../../../db/connection.js';
+import Product from '../../../models/Product.js';
+import StockAdjustment from '../../../models/StockAdjustment.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 async function finalVerification() {
   try {

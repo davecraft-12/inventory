@@ -1,5 +1,12 @@
-import Product from './models/Product.js';
-import connectDB from './db/connection.js';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+import Product from '../../../models/Product.js';
+import connectDB from '../../../db/connection.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 // Curated high-quality images for each product type
 const productImages = {

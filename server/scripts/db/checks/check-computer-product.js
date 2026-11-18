@@ -1,6 +1,13 @@
-import connectDB from './db/connection.js';
-import Product from './models/Product.js';
-import Category from './models/Category.js';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+import connectDB from '../../../db/connection.js';
+import Product from '../../../models/Product.js';
+import Category from '../../../models/Category.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 async function checkComputerProduct() {
   try {

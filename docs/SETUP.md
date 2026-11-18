@@ -13,7 +13,8 @@ This guide covers local setup for the Inventory Management web app (frontend + b
 
 - `frontend/` — React + Vite web client
 - `server/` — Express API server (MongoDB/Mongoose)
-- `server/scripts/` — standalone API/maintenance scripts
+- `server/scripts/api/` — API-calling utility scripts
+- `server/scripts/db/` — direct-database utility scripts (checks, fixes, images, seed, tests)
 - `docs/` — project documentation
 
 ## 1) Backend setup
@@ -97,23 +98,37 @@ npm run lint    # eslint
 
 ## 5) Backend utility scripts
 
-Standalone scripts in `server/scripts/` call the running backend API (not part of frontend runtime):
+### API scripts (`server/scripts/api/`)
+
+These scripts call the running backend API (not part of frontend runtime). Start the backend first:
 
 ```bash
-node server/scripts/check-stock.js
-node server/scripts/check-supplier-pos.js
-node server/scripts/debug-auth.js
-node server/scripts/test-stock-adjustments.js
-node server/scripts/delete-cancelled-po.js
+node server/scripts/api/check-stock.js
+node server/scripts/api/check-supplier-pos.js
+node server/scripts/api/debug-auth.js
+node server/scripts/api/test-stock-adjustments.js
+node server/scripts/api/delete-cancelled-po.js
 ```
 
 Optional environment variables:
 
 - `API_URL` — backend base URL (default: `http://localhost:3000`)
-- `ADMIN_EMAIL` — login email used by script (script default may differ from seeded users; override as needed)
+- `ADMIN_EMAIL` — login email used by script (script defaults may differ from seeded users; override as needed)
 - `ADMIN_PASSWORD` — login password used by script
 
 > `delete-cancelled-po.js` performs a destructive action (deletes the first cancelled purchase order found). Use with caution.
+
+### Database scripts (`server/scripts/db/`)
+
+These scripts connect directly to MongoDB and are organized by purpose:
+
+- `checks/` — inspect/verify data (e.g. `node server/scripts/db/checks/check-bicycle.js`)
+- `fixes/` — one-off data corrections
+- `images/` — product image scripts (`addProductImages.js`, `updateProductImages.js`)
+- `seed/` — database seed script (`node server/scripts/db/seed/seed.js`)
+- `tests/` — ad-hoc helper/test scripts
+
+Most DB scripts load `server/.env` automatically and use `MONGO_URI` (falling back to local defaults if configured that way). Run them with care, especially fix/reset scripts.
 
 ## Notes
 

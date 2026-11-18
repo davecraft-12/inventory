@@ -1,8 +1,15 @@
 import bcrypt from 'bcrypt';
-import User from './models/User.js';
-import Product from './models/Product.js';
-import Category from './models/Category.js';
-import connectDB from './db/connection.js';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+import User from '../../../models/User.js';
+import Product from '../../../models/Product.js';
+import Category from '../../../models/Category.js';
+import connectDB from '../../../db/connection.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 const USERS = [
   { name: 'Admin', email: 'admin@gmail.com', password: 'admin', role: 'admin', address: 'Admin address' },

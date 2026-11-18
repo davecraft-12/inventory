@@ -44,7 +44,9 @@ inventory/
 │  ├─ middleware/            # Auth/authorization/validation helpers
 │  ├─ models/                # Mongoose schemas/models
 │  ├─ routes/                # Express route modules mounted under /api/*
-│  ├─ scripts/               # Standalone API/debug/maintenance scripts
+│  ├─ scripts/
+│  │  ├─ api/                # API-calling debug/maintenance scripts
+│  │  └─ db/                 # Direct MongoDB scripts (checks/fixes/images/seed/tests)
 │  ├─ public/                # Standalone server-served pages (supplier portal)
 │  └─ index.js               # App bootstrap, middleware, route mounting, startup
 ├─ docs/                     # Project documentation

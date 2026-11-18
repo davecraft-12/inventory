@@ -6,9 +6,10 @@ A full-stack inventory management system with a React (Vite) web frontend and a 
 
 - `frontend/` — React web app (Vite, React Router, Tailwind utilities/components)
 - `server/` — Express API server, Mongoose models, auth, inventory/business routes
-- `server/scripts/` — standalone Node scripts for API/debug/maintenance tasks
+- `server/scripts/api/` — standalone Node scripts that call the backend API (debug/maintenance)
+- `server/scripts/db/` — standalone Node scripts that connect directly to MongoDB (checks, fixes, image updates, seed, tests)
 - `server/public/` — standalone server-served static pages (e.g. supplier portal)
-- `docs/` — project documentation (constraints, etc.)
+- `docs/` — project documentation (constraints, guides, reference files)
 
 ## Prerequisites
 
@@ -83,19 +84,29 @@ Created automatically by `server/index.js` when not present:
 
 Available pages and actions depend on the authenticated user's role.
 
-## Backend utility scripts (`server/scripts/`)
+## Backend utility scripts
 
-These are standalone scripts that call the running backend API (they do **not** run inside the frontend). Start the backend first.
+### API scripts (`server/scripts/api/`)
 
-Run from the repo root or `server/` directory, for example:
+These scripts call the running backend API (start the backend first):
 
 ```bash
-node server/scripts/check-stock.js
-node server/scripts/check-supplier-pos.js
-node server/scripts/debug-auth.js
-node server/scripts/test-stock-adjustments.js
-node server/scripts/delete-cancelled-po.js
+node server/scripts/api/check-stock.js
+node server/scripts/api/check-supplier-pos.js
+node server/scripts/api/debug-auth.js
+node server/scripts/api/test-stock-adjustments.js
+node server/scripts/api/delete-cancelled-po.js
 ```
+
+### Database scripts (`server/scripts/db/`)
+
+These scripts connect directly to MongoDB (use `server/.env` / `MONGO_URI` as applicable) and are organized by purpose:
+
+- `checks/` — read/verify database state (e.g. `check-bicycle.js`, `verify-all-stock.js`)
+- `fixes/` — one-off data correction scripts (e.g. `fix-stock-sync.js`)
+- `images/` — product image update scripts (e.g. `addProductImages.js`, `updateProductImages.js`)
+- `seed/` — seed script (`seed.js`)
+- `tests/` — ad-hoc test/helper scripts (e.g. `test-manager.js`)
 
 Optional environment variables:
 
