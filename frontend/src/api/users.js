@@ -1,5 +1,4 @@
 import { apiRequest } from '../utils/apiWrapper';
-import { getAuthHeaders } from '../utils/tokenUtils';
 
 const base = '/api/users';
 
@@ -25,7 +24,7 @@ export async function fetchUsers() {
 }
 
 export async function getUser(id) {
-  const res = await fetch(`${base}/${id}`, { headers: getAuthHeaders() });
+  const res = await apiRequest(`${base}/${id}`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err?.error?.message || 'Failed to fetch user');
@@ -34,7 +33,7 @@ export async function getUser(id) {
 }
 
 export async function getMe() {
-  const res = await fetch(`${base}/me`, { headers: getAuthHeaders() });
+  const res = await apiRequest(`${base}/me`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err?.error?.message || 'Failed to fetch profile');
@@ -43,9 +42,8 @@ export async function getMe() {
 }
 
 export async function updateUser(id, payload) {
-  const res = await fetch(`${base}/${id}`, {
+  const res = await apiRequest(`${base}/${id}`, {
     method: 'PATCH',
-    headers: getAuthHeaders(true),
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -56,9 +54,8 @@ export async function updateUser(id, payload) {
 }
 
 export async function updateMe(payload) {
-  const res = await fetch(`${base}/me`, {
+  const res = await apiRequest(`${base}/me`, {
     method: 'PATCH',
-    headers: getAuthHeaders(true),
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -69,7 +66,7 @@ export async function updateMe(payload) {
 }
 
 export async function deleteUser(id) {
-  const res = await fetch(`${base}/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+  const res = await apiRequest(`${base}/${id}`, { method: 'DELETE' });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err?.error?.message || 'Failed to delete user');

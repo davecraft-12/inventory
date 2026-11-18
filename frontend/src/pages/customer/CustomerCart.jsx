@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createOrder } from '../../api/orders';
-import { useCart } from '../../context/CartContext';
-import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/useCart';
+import { useAuth } from '../../context/useAuth';
 import { colors, fonts } from '../../styles/theme';
 
 const CustomerCart = () => {

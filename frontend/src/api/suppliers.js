@@ -1,9 +1,9 @@
-import { getAuthHeaders } from '../utils/tokenUtils';
+import { apiRequest } from '../utils/apiWrapper';
 
 const base = '/api/suppliers';
 
 export async function fetchSuppliers() {
-  const res = await fetch(base, { headers: getAuthHeaders() });
+  const res = await apiRequest(base);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err?.error?.message || 'Failed to fetch suppliers');
@@ -12,9 +12,8 @@ export async function fetchSuppliers() {
 }
 
 export async function createSupplier(payload) {
-  const res = await fetch(base, {
+  const res = await apiRequest(base, {
     method: 'POST',
-    headers: getAuthHeaders(true),
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -25,9 +24,8 @@ export async function createSupplier(payload) {
 }
 
 export async function updateSupplier(id, payload) {
-  const res = await fetch(`${base}/${id}`, {
+  const res = await apiRequest(`${base}/${id}`, {
     method: 'PATCH',
-    headers: getAuthHeaders(true),
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -38,7 +36,7 @@ export async function updateSupplier(id, payload) {
 }
 
 export async function deleteSupplier(id) {
-  const res = await fetch(`${base}/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+  const res = await apiRequest(`${base}/${id}`, { method: 'DELETE' });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err?.error?.message || 'Failed to delete supplier');

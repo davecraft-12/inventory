@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getMe, updateMe } from '../../api/users';
 import { colors, fonts } from '../../styles/theme';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/useAuth';
 
 const CustomerProfile = () => {
   const { setUser } = useAuth();

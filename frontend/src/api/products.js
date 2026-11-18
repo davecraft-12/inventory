@@ -1,5 +1,4 @@
 import { apiRequest } from '../utils/apiWrapper';
-import { getAuthHeaders } from '../utils/tokenUtils';
 
 const base = '/api/products';
 

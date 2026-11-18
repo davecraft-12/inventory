@@ -1,48 +1,46 @@
 // frontend/src/App.jsx
 
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 // Core Imports
-import { AuthProvider } from "./context/AuthContext"; // Corrected named import from previous steps
-import Root from "./utils/Root";                     // Placeholder/Layout for root path
-import Login from "./pages/login";                   // Login Page
-import Dashboard from "./pages/Dashboard";      // Admin Dashboard Layout (contains Sidebar and Outlet)
-import ProtectedRoutes from "./utils/ProtectedRoutes"; // For role-based access control
+import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
+import Root from "./routes/Root";
+import ProtectedRoutes from "./routes/ProtectedRoutes";
+import DashboardLayout from "./layouts/DashboardLayout";
+import CustomerLayout from "./layouts/CustomerLayout";
+import LoadingSpinner from "./components/ui/LoadingSpinner";
 
-import "./App.css"; // Your global CSS
+import "./App.css";
+import { colors, fonts } from "./styles/theme";
 
-// Imports for your specific Admin Dashboard Pages
-// MAKE SURE THESE FILES EXIST IN 'frontend/src/pages/'
-// And each file exports a default React component (e.g., export default CategoriesPage;)
-import CategoriesPage from './pages/CategoriesPage';
-import ProductsPage from './pages/ProductsPage';
-import SuppliersPage from './pages/SuppliersPage';
-import OrdersPage from './pages/OrdersPage';
-import UsersPage from './pages/UsersPage';
-import ProfilePage from './pages/ProfilePage';
-import DashboardHomePage from './pages/DashboardHomePage';
-import LowStockPage from './pages/LowStockPage';
-import { PurchaseOrdersPage, StockAdjustmentsPage } from './pages/inventory';
-import ReportsPage from './pages/ReportsPage';
-import SalesOrdersPage from './pages/SalesOrdersPage';
-import ManagerDashboard from './pages/ManagerDashboard';
-import ManagerProductsPage from './pages/ManagerProductsPage';
-import CustomerLayout from './pages/customer/CustomerLayout';
-import CustomerHome from './pages/customer/CustomerHome';
-import CustomerCatalog from './pages/customer/CustomerCatalog';
-import CustomerOrders from './pages/customer/CustomerOrders';
-import CustomerCart from './pages/customer/CustomerCart';
-import CustomerProfile from './pages/customer/CustomerProfile';
+// Auth & dashboard pages (lazy-loaded)
+const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
+const CategoriesPage = lazy(() => import("./pages/admin/CategoriesPage"));
+const ProductsPage = lazy(() => import("./pages/admin/ProductsPage"));
+const SuppliersPage = lazy(() => import("./pages/admin/SuppliersPage"));
+const OrdersPage = lazy(() => import("./pages/admin/OrdersPage"));
+const UsersPage = lazy(() => import("./pages/admin/UsersPage"));
+const DashboardHomePage = lazy(() => import("./pages/shared/DashboardHomePage"));
+const ProfilePage = lazy(() => import("./pages/shared/ProfilePage"));
+const ReportsPage = lazy(() => import("./pages/shared/ReportsPage"));
+const LowStockPage = lazy(() => import("./pages/manager/LowStockPage"));
+const SalesOrdersPage = lazy(() => import("./pages/manager/SalesOrdersPage"));
+const ManagerDashboard = lazy(() => import("./pages/manager/ManagerDashboard"));
+const ManagerProductsPage = lazy(() => import("./pages/manager/ManagerProductsPage"));
+const PhysicalCountPage = lazy(() => import("./pages/manager/PhysicalCountPage"));
+const PurchaseOrdersPage = lazy(() => import("./pages/inventory/PurchaseOrdersPage"));
+const StockAdjustmentsPage = lazy(() => import("./pages/inventory/StockAdjustmentsPage"));
+const CustomerHome = lazy(() => import("./pages/customer/CustomerHome"));
+const CustomerCatalog = lazy(() => import("./pages/customer/CustomerCatalog"));
+const CustomerOrders = lazy(() => import("./pages/customer/CustomerOrders"));
+const CustomerCart = lazy(() => import("./pages/customer/CustomerCart"));
+const CustomerProfile = lazy(() => import("./pages/customer/CustomerProfile"));
 
-
-// Placeholder components for general pages (from your previous code)
+// Placeholder components for general pages
 const UnauthorizedPage = () => <p className="font-bold text-3xl mt-20 text-center">Unauthorized</p>;
 const NotFoundPage = () => <h1 className="text-xl">404 Not Found</h1>;
-
-
-import { colors, fonts } from "./styles/theme";
 
 function App() {
   return (
@@ -57,73 +55,77 @@ function App() {
       <Router>
         <AuthProvider>
           <CartProvider>
-            <Routes>
-              {/* Public/Root Layout Route */}
-              <Route path="/" element={<Root />} />
-              {/* Login Route */}
-              <Route path="/login" element={<Login />} />
-              {/* Admin Dashboard - Protected Parent Route */}
-              <Route
-                path="/admin-dashboard"
-                element={
-                  <ProtectedRoutes requireRole={["admin"]}>
-                    <Dashboard />
-                  </ProtectedRoutes>
-                }
-              >
-                {/* Admin-only routes */}
-                <Route index element={<DashboardHomePage />} />
-                <Route path="categories" element={<CategoriesPage />} />
-                <Route path="suppliers" element={<SuppliersPage />} />
-                <Route path="users" element={<UsersPage />} />
-                <Route path="profile" element={<ProfilePage />} />
-                <Route path="products" element={<ProductsPage />} />
-                <Route path="orders" element={<OrdersPage />} />
-                <Route path="reports" element={<ReportsPage />} />
-              </Route>
+            <Suspense fallback={<LoadingSpinner fullScreen text="Loading..." />}>
+              <Routes>
+                {/* Public/Root Layout Route */}
+                <Route path="/" element={<Root />} />
+                {/* Login Route */}
+                <Route path="/login" element={<LoginPage />} />
 
-              {/* Manager Dashboard */}
-              <Route
-                path="/manager-dashboard"
-                element={
-                  <ProtectedRoutes requireRole={["manager"]}>
-                    <Dashboard />
-                  </ProtectedRoutes>
-                }
-              >
-                {/* Manager-only routes */}
-                <Route index element={<ManagerDashboard />} />
-                <Route path="stock-in" element={<ManagerProductsPage />} />
-                <Route path="stock-out" element={<SalesOrdersPage />} />
-                <Route path="stock-adjustments" element={<StockAdjustmentsPage />} />
-                <Route path="physical-count" element={<div>Physical Count - Coming Soon</div>} />
-                <Route path="movement-history" element={<div>Movement History - Coming Soon</div>} />
-                <Route path="low-stock" element={<LowStockPage />} />
-                <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
-                <Route path="reports" element={<ReportsPage />} />
-                <Route path="profile" element={<ProfilePage />} />
-              </Route>
+                {/* Admin Dashboard - Protected Parent Route */}
+                <Route
+                  path="/admin-dashboard"
+                  element={
+                    <ProtectedRoutes requireRole={["admin"]}>
+                      <DashboardLayout />
+                    </ProtectedRoutes>
+                  }
+                >
+                  {/* Admin-only routes */}
+                  <Route index element={<DashboardHomePage />} />
+                  <Route path="categories" element={<CategoriesPage />} />
+                  <Route path="suppliers" element={<SuppliersPage />} />
+                  <Route path="users" element={<UsersPage />} />
+                  <Route path="profile" element={<ProfilePage />} />
+                  <Route path="products" element={<ProductsPage />} />
+                  <Route path="orders" element={<OrdersPage />} />
+                  <Route path="reports" element={<ReportsPage />} />
+                </Route>
 
-              {/* Customer dashboard */}
-              <Route
-                path="/customer"
-                element={
-                  <ProtectedRoutes requireRole={["customer"]}>
-                    <CustomerLayout />
-                  </ProtectedRoutes>
-                }
-              >
-                <Route index element={<CustomerHome />} />
-                <Route path="catalog" element={<CustomerCatalog />} />
-                <Route path="orders" element={<CustomerOrders />} />
-                <Route path="cart" element={<CustomerCart />} />
-                <Route path="profile" element={<CustomerProfile />} />
-              </Route>
+                {/* Manager Dashboard */}
+                <Route
+                  path="/manager-dashboard"
+                  element={
+                    <ProtectedRoutes requireRole={["manager"]}>
+                      <DashboardLayout />
+                    </ProtectedRoutes>
+                  }
+                >
+                  {/* Manager-only routes */}
+                  <Route index element={<ManagerDashboard />} />
+                  <Route path="stock-in" element={<ManagerProductsPage />} />
+                  <Route path="products" element={<ManagerProductsPage />} />
+                  <Route path="stock-out" element={<SalesOrdersPage />} />
+                  <Route path="stock-adjustments" element={<StockAdjustmentsPage />} />
+                  <Route path="physical-count" element={<PhysicalCountPage />} />
+                  <Route path="movement-history" element={<div>Movement History - Coming Soon</div>} />
+                  <Route path="low-stock" element={<LowStockPage />} />
+                  <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
+                  <Route path="reports" element={<ReportsPage />} />
+                  <Route path="profile" element={<ProfilePage />} />
+                </Route>
 
-              {/* Authorization & Error Routes */}
-              <Route path="/unauthorized" element={<UnauthorizedPage />} />
-              <Route path="*" element={<NotFoundPage />} /> {/* Catches any other unmatched routes */}
-            </Routes>
+                {/* Customer dashboard */}
+                <Route
+                  path="/customer"
+                  element={
+                    <ProtectedRoutes requireRole={["customer"]}>
+                      <CustomerLayout />
+                    </ProtectedRoutes>
+                  }
+                >
+                  <Route index element={<CustomerHome />} />
+                  <Route path="catalog" element={<CustomerCatalog />} />
+                  <Route path="orders" element={<CustomerOrders />} />
+                  <Route path="cart" element={<CustomerCart />} />
+                  <Route path="profile" element={<CustomerProfile />} />
+                </Route>
+
+                {/* Authorization & Error Routes */}
+                <Route path="/unauthorized" element={<UnauthorizedPage />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </Suspense>
           </CartProvider>
         </AuthProvider>
       </Router>

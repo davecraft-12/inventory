@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, History, Settings, Filter, Package, Trash2, Edit } from 'lucide-react';
 import { colors, radii } from '../../styles/theme';
-import { tokenUtils } from '../../utils/tokenUtils';
+import { fetchProducts } from '../../api/products';
+import {
+  fetchStockAdjustments,
+  createStockAdjustment,
+  updateStockAdjustment,
+  deleteStockAdjustment
+} from '../../api/stockAdjustments';
 
 const StockAdjustmentsPage = () => {
   const [adjustments, setAdjustments] = useState([]);
@@ -24,36 +30,15 @@ const StockAdjustmentsPage = () => {
     type: 'adjustment'
   });
 
-  const reasonOptions = [
-    'Damaged items',
-    'Lost items', 
-    'Expired products',
-    'Extra items found',
-    'Returned items',
-    'Theft/Shrinkage',
-    'Counting error',
-    'System error',
-    'Transfer adjustment',
-    'Other'
-  ];
-
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
     try {
-      const [adjRes, prodRes] = await Promise.all([
-        fetch('http://localhost:3000/api/stock-adjustments', {
-          headers: tokenUtils.getAuthHeaders()
-        }),
-        fetch('http://localhost:3000/api/products?limit=1000', {
-          headers: tokenUtils.getAuthHeaders()
-        })
-      ]);
-
       const [adjData, prodData] = await Promise.all([
-        adjRes.json(), prodRes.json()
+        fetchStockAdjustments(),
+        fetchProducts(1, 1000)
       ]);
 
       setAdjustments(adjData.data?.adjustments || []);
@@ -74,11 +59,6 @@ const StockAdjustmentsPage = () => {
       productId,
       actualQuantity: product?.stock || 0
     }));
-  };
-
-  const calculateAdjustment = () => {
-    if (!selectedProduct) return 0;
-    return adjustmentForm.actualQuantity - selectedProduct.stock;
   };
 
   const getFilteredAdjustments = () => {
@@ -123,46 +103,37 @@ const StockAdjustmentsPage = () => {
       return;
     }
 
-    try {
-      const url = editingAdjustment 
-        ? `http://localhost:3000/api/stock-adjustments/${editingAdjustment._id}`
-        : 'http://localhost:3000/api/stock-adjustments';
-      
-      const method = editingAdjustment ? 'PUT' : 'POST';
-      
-      const response = await fetch(url, {
-        method,
-        headers: tokenUtils.getAuthHeaders(true),
-        body: JSON.stringify({
-          productId: adjustmentForm.productId,
-          quantity: adjustmentForm.actualQuantity,
-          type: adjustmentForm.type,
-          reason: adjustmentForm.reason,
-          notes: adjustmentForm.notes
-        })
-      });
+    const payload = {
+      productId: adjustmentForm.productId,
+      quantity: adjustmentForm.actualQuantity,
+      type: adjustmentForm.type,
+      reason: adjustmentForm.reason,
+      notes: adjustmentForm.notes
+    };
 
-      if (response.ok) {
-        setSuccess(`Stock adjustment ${editingAdjustment ? 'updated' : 'completed'} successfully!`);
-        setShowAdjustForm(false);
-        setAdjustmentForm({ productId: '', actualQuantity: 0, reason: '', notes: '', type: 'adjustment' });
-        setSelectedProduct(null);
-        setEditingAdjustment(null);
-        
-        // Force refresh products data to show updated stock
-        await fetchData();
-        
-        // Also trigger a page refresh for Products page if it's open in another tab
-        window.dispatchEvent(new CustomEvent('stockUpdated'));
-        
-        setTimeout(() => setSuccess(null), 3000);
+    try {
+      if (editingAdjustment) {
+        await updateStockAdjustment(editingAdjustment._id, payload);
       } else {
-        const errorData = await response.json();
-        setError(errorData.message || `Failed to ${editingAdjustment ? 'update' : 'create'} adjustment`);
+        await createStockAdjustment(payload);
       }
+
+      setSuccess(`Stock adjustment ${editingAdjustment ? 'updated' : 'completed'} successfully!`);
+      setShowAdjustForm(false);
+      setAdjustmentForm({ productId: '', actualQuantity: 0, reason: '', notes: '', type: 'adjustment' });
+      setSelectedProduct(null);
+      setEditingAdjustment(null);
+
+      // Force refresh products data to show updated stock
+      await fetchData();
+
+      // Also trigger a page refresh for Products page if it's open in another tab
+      window.dispatchEvent(new CustomEvent('stockUpdated'));
+
+      setTimeout(() => setSuccess(null), 3000);
     } catch (error) {
       console.error(`Error ${editingAdjustment ? 'updating' : 'creating'} adjustment:`, error);
-      setError('Network error. Please try again.');
+      setError(error.message || 'Network error. Please try again.');
     }
   };
 
@@ -203,10 +174,7 @@ const StockAdjustmentsPage = () => {
 
     try {
       for (const adjustmentId of selectedAdjustments) {
-        await fetch(`http://localhost:3000/api/stock-adjustments/${adjustmentId}`, {
-          method: 'DELETE',
-          headers: tokenUtils.getAuthHeaders()
-        });
+        await deleteStockAdjustment(adjustmentId);
       }
       
       setSuccess(`${selectedAdjustments.length} adjustment(s) deleted successfully!`);
@@ -215,7 +183,7 @@ const StockAdjustmentsPage = () => {
       setTimeout(() => setSuccess(null), 3000);
     } catch (error) {
       console.error('Error deleting adjustments:', error);
-      setError('Network error. Please try again.');
+      setError(error.message || 'Network error. Please try again.');
     }
   };
 
@@ -225,22 +193,13 @@ const StockAdjustmentsPage = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3000/api/stock-adjustments/${adjustmentId}`, {
-        method: 'DELETE',
-        headers: tokenUtils.getAuthHeaders()
-      });
-
-      if (response.ok) {
-        setSuccess('Adjustment history deleted successfully (stock unchanged)!');
-        fetchData();
-        setTimeout(() => setSuccess(null), 3000);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to delete adjustment');
-      }
+      await deleteStockAdjustment(adjustmentId);
+      setSuccess('Adjustment history deleted successfully (stock unchanged)!');
+      fetchData();
+      setTimeout(() => setSuccess(null), 3000);
     } catch (error) {
       console.error('Error deleting adjustment:', error);
-      setError('Network error. Please try again.');
+      setError(error.message || 'Failed to delete adjustment');
     }
   };
 

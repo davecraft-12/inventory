@@ -1,20 +1,21 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-
-const CartContext = createContext();
+import React, { useEffect, useMemo, useState } from 'react';
+import { CartContext } from "./cart-context";
 
 const STORAGE_KEY = 'customer_cart';
 
-export const CartProvider = ({ children }) => {
-  const [items, setItems] = useState([]);
+const readStoredItems = () => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch (err) {
+    console.error('Failed to load cart', err);
+    return [];
+  }
+};
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) setItems(JSON.parse(saved));
-    } catch (err) {
-      console.error('Failed to load cart', err);
-    }
-  }, []);
+export const CartProvider = ({ children }) => {
+  const [items, setItems] = useState(readStoredItems);
 
   useEffect(() => {
     try {
@@ -65,8 +66,6 @@ export const CartProvider = ({ children }) => {
     </CartContext.Provider>
   );
 };
-
-export const useCart = () => useContext(CartContext);
 
 export default CartProvider;
 

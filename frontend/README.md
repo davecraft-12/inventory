@@ -1,16 +1,40 @@
-# React + Vite
+# Frontend (Web App)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite frontend for the Inventory Management web app.
 
-Currently, two official plugins are available:
+For full project setup (backend, database, default users, utility scripts), see the root [`README.md`](../README.md).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Requirements
 
-## React Compiler
+- Node.js 18+
+- Backend API running (default: `http://localhost:3000`)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Development
 
-## Expanding the ESLint configuration
+```bash
+npm install
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Dev server: `http://localhost:5173`
+- API proxy: requests to `/api/*` are forwarded to `http://localhost:3000` (configured in `vite.config.js`)
+
+## Scripts
+
+- `npm run dev` — start Vite dev server
+- `npm run build` — production build to `dist/`
+- `npm run preview` — preview production build locally
+- `npm run lint` — run ESLint
+
+## Structure notes
+
+- `src/pages/` — route-level pages grouped by area (`admin`, `manager`, `shared`, `auth`, `customer`, `inventory`)
+- `src/layouts/` — dashboard/customer layouts
+- `src/routes/` — root/protected route components
+- `src/api/` — API modules
+- `src/utils/apiWrapper.js` — shared request/auth wrapper for API calls
+- `src/components/` — shared UI, layout, and dashboard components
+
+## Manager dashboard pages
+
+Includes Stock In/Products, Stock Out (sales orders), Stock Adjustments, Physical Count, Low Stock, Purchase Orders, Reports, and Profile (subject to backend data/permissions).

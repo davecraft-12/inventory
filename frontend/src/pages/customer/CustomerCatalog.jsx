@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchProducts } from '../../api/products';
 import { colors, fonts } from '../../styles/theme';
-import { useCart } from '../../context/CartContext';
+import { useCart } from '../../context/useCart';
 
 const CustomerCatalog = () => {
   const [products, setProducts] = useState([]);
@@ -99,7 +99,7 @@ const CustomerCatalog = () => {
                   src={p.images[0]} 
                   alt={p.name} 
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  onLoad={(e) => console.log('Image loaded:', p.name)}
+                  onLoad={() => console.log('Image loaded:', p.name)}
                   onError={(e) => {
                     console.log('Image failed:', p.name, p.images[0]);
                     e.target.style.display = 'none';

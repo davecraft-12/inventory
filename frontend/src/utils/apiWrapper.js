@@ -24,7 +24,7 @@ export const apiRequest = async (url, options = {}) => {
         ...options.headers
       };
       response = await fetch(url, requestOptions);
-    } catch (refreshError) {
+    } catch {
       // Refresh failed, redirect to login
       clearTokens();
       window.location.href = '/login';

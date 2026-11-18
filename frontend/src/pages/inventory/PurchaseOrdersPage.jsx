@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Filter, Eye, Truck, CheckCircle, XCircle } from 'lucide-react';
-import { tokenUtils } from '../../utils/tokenUtils';
-import { colors, fonts, fontSizes, radii, shadows } from '../../styles/theme';
+import { fetchSuppliers } from '../../api/suppliers';
+import { fetchProducts } from '../../api/products';
+import {
+  fetchPurchaseOrders,
+  createPurchaseOrder,
+  updatePurchaseOrderStatus,
+  receivePurchaseOrder
+} from '../../api/purchaseOrders';
+import { colors, fonts, radii, shadows } from '../../styles/theme';
 
 const PurchaseOrdersPage = () => {
   const [purchaseOrders, setPurchaseOrders] = useState([]);
@@ -30,24 +37,15 @@ const PurchaseOrdersPage = () => {
   useEffect(() => {
     fetchData();
     if (showAnalytics) fetchAnalytics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, showAnalytics]);
 
   const fetchData = async () => {
     try {
-      const [poRes, suppRes, prodRes] = await Promise.all([
-        fetch(`http://localhost:3000/api/purchase-orders?${new URLSearchParams(filters)}`, {
-          headers: tokenUtils.getAuthHeaders()
-        }),
-        fetch('http://localhost:3000/api/suppliers', {
-          headers: tokenUtils.getAuthHeaders()
-        }),
-        fetch('http://localhost:3000/api/products?limit=1000', {
-          headers: tokenUtils.getAuthHeaders()
-        })
-      ]);
-
       const [poData, suppData, prodData] = await Promise.all([
-        poRes.json(), suppRes.json(), prodRes.json()
+        fetchPurchaseOrders(filters),
+        fetchSuppliers(),
+        fetchProducts(1, 1000)
       ]);
 
       setPurchaseOrders(poData.orders || poData.data || []);
@@ -106,39 +104,23 @@ const PurchaseOrdersPage = () => {
     try {
       console.log('Creating PO with data:', { ...newPO, items: validItems });
       
-      const response = await fetch('http://localhost:3000/api/purchase-orders', {
-        method: 'POST',
-        headers: tokenUtils.getAuthHeaders(true),
-        body: JSON.stringify({ ...newPO, items: validItems })
-      });
+      await createPurchaseOrder({ ...newPO, items: validItems });
 
-      console.log('Response status:', response.status);
-      
-      if (response.ok) {
-        setSuccess('Purchase order created successfully!');
-        setShowCreateForm(false);
-        setNewPO({ supplier: '', items: [{ product: '', quantity: 1, unitCost: 0 }], expectedDate: '', notes: '' });
-        setError(null);
-        fetchData();
-        setTimeout(() => setSuccess(null), 3000);
-      } else {
-        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-        console.error('Server error:', errorData);
-        setError(errorData.message || `Server error: ${response.status}`);
-      }
+      setSuccess('Purchase order created successfully!');
+      setShowCreateForm(false);
+      setNewPO({ supplier: '', items: [{ product: '', quantity: 1, unitCost: 0 }], expectedDate: '', notes: '' });
+      setError(null);
+      fetchData();
+      setTimeout(() => setSuccess(null), 3000);
     } catch (error) {
-      console.error('Network error creating purchase order:', error);
-      setError('Network error. Please check your connection and try again.');
+      console.error('Error creating purchase order:', error);
+      setError(error.message || 'Network error. Please check your connection and try again.');
     }
   };
 
   const updateStatus = async (id, status) => {
     try {
-      await fetch(`http://localhost:3000/api/purchase-orders/${id}/status`, {
-        method: 'PATCH',
-        headers: tokenUtils.getAuthHeaders(true),
-        body: JSON.stringify({ status })
-      });
+      await updatePurchaseOrderStatus(id, status);
       fetchData();
     } catch (error) {
       console.error('Error updating status:', error);
@@ -227,23 +209,13 @@ const PurchaseOrdersPage = () => {
 
   const handlePartialReceive = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/purchase-orders/${receivingPO._id}/receive`, {
-        method: 'POST',
-        headers: tokenUtils.getAuthHeaders(true),
-        body: JSON.stringify({ receivedItems: receivingItems })
-      });
-
-      if (response.ok) {
-        setSuccess('Items received successfully!');
-        setShowReceiveModal(false);
-        fetchData();
-        setTimeout(() => setSuccess(null), 3000);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to receive items');
-      }
+      await receivePurchaseOrder(receivingPO._id, receivingItems);
+      setSuccess('Items received successfully!');
+      setShowReceiveModal(false);
+      fetchData();
+      setTimeout(() => setSuccess(null), 3000);
     } catch (error) {
-      setError('Network error. Please try again.');
+      setError(error.message || 'Network error. Please try again.');
     }
   };
 
@@ -251,18 +223,6 @@ const PurchaseOrdersPage = () => {
     setReceivingItems(prev => prev.map((item, i) => 
       i === index ? { ...item, [field]: value } : item
     ));
-  };
-
-  const getStatusColor = (status) => {
-    const colors = {
-      draft: 'bg-gray-100 text-gray-800',
-      sent: 'bg-blue-100 text-blue-800', 
-      confirmed: 'bg-yellow-100 text-yellow-800',
-      shipped: 'bg-purple-100 text-purple-800',
-      received: 'bg-green-100 text-green-800',
-      cancelled: 'bg-red-100 text-red-800'
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
   const getStatusIcon = (status) => {
@@ -300,7 +260,7 @@ const PurchaseOrdersPage = () => {
         }
         setSelectedPOs([]);
         fetchData();
-      } catch (error) {
+      } catch {
         setError('Failed to update purchase orders');
       }
     }
