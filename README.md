@@ -105,10 +105,15 @@ Optional environment variables:
 
 > `delete-cancelled-po.js` performs a destructive action (deletes the first cancelled purchase order found). Use with caution.
 
-## Additional docs
+## Documentation
 
-- `docs/CONSTRAINTS.md` — product/category/supplier/PO/stock-adjustment relationships and validation constraints.
-- `frontend/README.md` — frontend-specific development notes.
+- `docs/SETUP.md` — local setup, environment variables, run/build instructions, and utility scripts
+- `docs/ARCHITECTURE.md` — system architecture, repository structure, and key workflows
+- `docs/WEB_APP.md` — web app areas, routes, and role-based pages/features
+- `docs/API.md` — backend API overview (route modules and endpoints summary)
+- `docs/CONSTRAINTS.md` — product/category/supplier/PO/stock-adjustment relationships and validation constraints
+- `frontend/README.md` — frontend-specific development notes
+
 
 ## Supplier portal
 
